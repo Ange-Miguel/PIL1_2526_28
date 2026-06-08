@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rapport BDD — IFRI_MentorLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --surface: #13161e;
+      --surface2: #1a1e2a;
+      --border: #252a38;
+      --accent: #4f8eff;
+      --accent2: #00e5b0;
+      --accent3: #ff6b6b;
+      --text: #dde2f0;
+      --text-muted: #7a82a0;
+      --heading: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lora', serif;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    /* HEADER */
+    header {
+      position: relative;
+      padding: 80px 60px 60px;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(79,142,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; right: 100px;
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(0,229,176,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid var(--accent2);
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(32px, 5vw, 56px);
+      color: var(--heading);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    h1 span { color: var(--accent); }
+    .header-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .header-meta span { display: flex; align-items: center; gap: 8px; }
+    .header-meta span::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    /* LAYOUT */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* NAV SIDEBAR */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 0;
+      min-height: 100vh;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 40px 24px;
+      background: var(--surface);
+    }
+    nav h3 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    nav a {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 7px 10px;
+      border-radius: 4px;
+      border-left: 2px solid transparent;
+      transition: all 0.2s;
+      margin-bottom: 2px;
+    }
+    nav a:hover, nav a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(79,142,255,0.06);
+    }
+    nav .nav-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-right: 6px;
+    }
+
+    /* MAIN CONTENT */
+    main {
+      padding: 60px 60px 100px;
+    }
+
+    /* SECTIONS */
+    section {
+      margin-bottom: 72px;
+      scroll-margin-top: 40px;
+    }
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--heading);
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--heading);
+      margin: 32px 0 12px;
+    }
+    p { margin-bottom: 14px; color: var(--text); }
+
+    /* TABLE CARDS */
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .table-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .table-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .table-card .tc-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .table-card .tc-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--heading);
+      margin-bottom: 8px;
+    }
+    .table-card .tc-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* DETAIL BLOCKS */
+    .detail-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    .detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-header .dh-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--heading);
+    }
+    .detail-header .dh-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(79,142,255,0.12);
+      color: var(--accent);
+    }
+    .detail-body { padding: 20px; }
+    .detail-body p { font-size: 14px; margin-bottom: 10px; }
+
+    /* FIELD TABLE */
+    .field-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 16px 0;
+    }
+    .field-table th {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .field-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(37,42,56,0.5);
+      vertical-align: top;
+    }
+    .field-table tr:last-child td { border-bottom: none; }
+    .field-table .fn {
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--accent2);
+      font-size: 12px;
+    }
+    .field-table .ft {
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--accent);
+      font-size: 12px;
+    }
+    .field-table .fd { color: var(--text-muted); font-size: 13px; }
+
+    /* JUSTIFICATION BOX */
+    .justif {
+      border-left: 3px solid var(--accent);
+      background: rgba(79,142,255,0.05);
+      padding: 16px 20px;
+      margin: 16px 0;
+      border-radius: 0 6px 6px 0;
+      font-size: 14px;
+    }
+    .justif strong {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .justif-green {
+      border-left-color: var(--accent2);
+      background: rgba(0,229,176,0.05);
+    }
+    .justif-green strong { color: var(--accent2); }
+
+    /* CODE INLINE */
+    code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      background: rgba(79,142,255,0.1);
+      color: var(--accent2);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* SCHEMA VISUAL */
+    .schema-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 32px;
+      margin: 24px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+    .schema-entity {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      text-align: center;
+    }
+    .schema-entity.secondary { border-color: var(--accent2); color: var(--accent2); }
+    .schema-entity.tertiary { border-color: #9b8fff; color: #9b8fff; }
+    .schema-arrow {
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+
+    /* INDEX TABLE */
+    .index-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 16px 0;
+    }
+    .index-table th {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 8px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .index-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .index-table tr:last-child td { border-bottom: none; }
+    .index-table code { font-size: 11px; }
+
+    /* SCORES */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .score-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .score-item .si-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .score-item .si-field {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--accent);
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { display: none; }
+      main { padding: 40px 24px; }
+      header { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Rapport Technique — Base de Données</div>
+  <h1>IFRI_<span>MentorLink</span></h1>
+  <p style="font-size:16px; color: var(--text-muted); max-width: 560px;">
+    Documentation complète et justification des choix de conception de la base de données relationnelle du projet intégrateur PIL1 2025-2026.
+  </p>
+  <div class="header-meta">
+    <span>Groupe 28 — PIL1_2526_28</span>
+    <span>MySQL 8.0+ / InnoDB</span>
+    <span>utf8mb4_unicode_ci</span>
+    <span>15 tables · 3 vues · 12 index</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav>
+    <h3>Sommaire</h3>
+    <a href="#intro"><span class="nav-num">00</span> Introduction</a>
+    <a href="#config"><span class="nav-num">01</span> Configuration</a>
+    <a href="#tables"><span class="nav-num">02</span> Tables</a>
+    <a href="#detail"><span class="nav-num">03</span> Détail des tables</a>
+    <a href="#contraintes"><span class="nav-num">04</span> Contraintes</a>
+    <a href="#index"><span class="nav-num">05</span> Index</a>
+    <a href="#vues"><span class="nav-num">06</span> Vues</a>
+    <a href="#donnees"><span class="nav-num">07</span> Données de test</a>
+    <a href="#conclusion"><span class="nav-num">08</span> Conclusion</a>
+  </nav>
+
+  <main>
+
+    <!-- INTRO -->
+    <section id="intro">
+      <div class="section-label">00 — Introduction</div>
+      <h2>Présentation générale</h2>
+      <p>
+        Ce document présente et justifie l'ensemble des choix de conception de la base de données
+        de l'application <strong>IFRI_MentorLink</strong>, une plateforme web de mise en relation
+        entre étudiants mentors et mentorés au sein de l'IFRI (Université d'Abomey-Calavi).
+      </p>
+      <p>
+        La base de données a été conçue pour répondre aux trois modules fonctionnels définis dans
+        le cahier des charges : la gestion des comptes et profils, la mise en correspondance
+        (matching), et la messagerie instantanée.
+      </p>
+      <div class="schema-box">
+        <div class="schema-entity">Profils<br>utilisateurs</div>
+        <div class="schema-arrow">↔</div>
+        <div class="schema-entity secondary">Algorithme<br>de matching</div>
+        <div class="schema-arrow">↔</div>
+        <div class="schema-entity tertiary">Messagerie<br>instantanée</div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section id="config">
+      <div class="section-label">01 — Configuration</div>
+      <h2>Paramètres globaux de la base</h2>
+
+      <h3>Moteur InnoDB</h3>
+      <p>
+        Toutes les tables utilisent le moteur <code>InnoDB</code>. Ce choix est délibéré :
+        c'est le seul moteur MySQL qui supporte les clés étrangères, les transactions ACID
+        et le mécanisme <code>CASCADE</code>. Sans InnoDB, toutes les contraintes
+        référentielles définies dans le schéma seraient ignorées silencieusement.
+      </p>
+      <div class="justif">
+        <strong>Justification</strong>
+        Le projet fait un usage intensif des clés étrangères avec <code>ON DELETE CASCADE</code>
+        pour garantir l'intégrité des données. Par exemple, supprimer un utilisateur supprime
+        automatiquement ses compétences, lacunes, disponibilités, offres et messages associés.
+        Ce comportement est impossible avec MyISAM.
+      </div>
+
+      <h3>Encodage utf8mb4</h3>
+      <p>
+        L'encodage choisi est <code>utf8mb4</code> avec la collation <code>utf8mb4_unicode_ci</code>.
+      </p>
+      <div class="justif justif-green">
+        <strong>Justification</strong>
+        <code>utf8mb4</code> est le vrai UTF-8 complet (4 octets), contrairement à l'ancien
+        <code>utf3</code> de MySQL qui ne supportait que 3 octets. Il permet de stocker
+        les caractères accentués français (é, à, ç…) ainsi que tous les caractères Unicode
+        sans risque de troncature. La collation <code>_unicode_ci</code> assure des
+        comparaisons insensibles à la casse correctes pour le français.
+      </div>
+
+      <h3>SET FOREIGN_KEY_CHECKS = 0</h3>
+      <p>
+        Le script commence par désactiver temporairement la vérification des clés étrangères
+        et la réactive à la fin avec <code>SET FOREIGN_KEY_CHECKS = 1</code>.
+      </p>
+      <div class="justif">
+        <strong>Justification</strong>
+        Cela permet de créer ou supprimer les tables dans n'importe quel ordre sans avoir
+        à respecter l'ordre des dépendances. Sans cela, il faudrait créer d'abord toutes
+        les tables référencées avant celles qui les référencent, ce qui complique la
+        maintenance du script.
+      </div>
+    </section>
+
+    <!-- TABLES OVERVIEW -->
+    <section id="tables">
+      <div class="section-label">02 — Vue d'ensemble</div>
+      <h2>Les 15 tables du schéma</h2>
+      <p>La base est organisée en trois groupes fonctionnels correspondant aux trois modules du cahier des charges.</p>
+
+      <h3>Module 1 — Gestion des profils</h3>
+      <div class="table-grid">
+        <div class="table-card">
+          <div class="tc-num">TABLE 1</div>
+          <div class="tc-name">filiere</div>
+          <div class="tc-desc">Référentiel des filières de l'IFRI (IA, IM, GL, SE_IoT, SI)</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 2</div>
+          <div class="tc-name">matiere</div>
+          <div class="tc-desc">Catalogue centralisé de toutes les matières et compétences</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 3</div>
+          <div class="tc-name">utilisateur</div>
+          <div class="tc-desc">Comptes, profils et informations personnelles de tous les utilisateurs</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 4</div>
+          <div class="tc-name">competence_utilisateur</div>
+          <div class="tc-desc">Points forts d'un utilisateur avec niveau de maîtrise (1 à 5)</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 5</div>
+          <div class="tc-name">lacune_utilisateur</div>
+          <div class="tc-desc">Points faibles avec priorité et suivi de résolution</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 6</div>
+          <div class="tc-name">disponibilite</div>
+          <div class="tc-desc">Créneaux horaires habituels structurés de l'utilisateur</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 7</div>
+          <div class="tc-name">reset_password</div>
+          <div class="tc-desc">Tokens temporaires pour la réinitialisation du mot de passe</div>
+        </div>
+      </div>
+
+      <h3>Module 2 — Matching</h3>
+      <div class="table-grid">
+        <div class="table-card">
+          <div class="tc-num">TABLE 8</div>
+          <div class="tc-name">offre_mentorat</div>
+          <div class="tc-desc">Offres et demandes de mentorat publiées par les utilisateurs</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 9</div>
+          <div class="tc-name">offre_matiere</div>
+          <div class="tc-desc">Association N,N entre une offre et les matières concernées</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 10</div>
+          <div class="tc-name">offre_disponibilite</div>
+          <div class="tc-desc">Créneaux horaires spécifiques à une offre de mentorat</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 11</div>
+          <div class="tc-name">match_mentorat</div>
+          <div class="tc-desc">Résultats de l'algorithme avec scores décomposés sur 100</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 12</div>
+          <div class="tc-name">reponse_offre</div>
+          <div class="tc-desc">Candidatures en réponse à une offre ou demande de mentorat</div>
+        </div>
+      </div>
+
+      <h3>Module 3 — Messagerie</h3>
+      <div class="table-grid">
+        <div class="table-card">
+          <div class="tc-num">TABLE 13</div>
+          <div class="tc-name">conversation</div>
+          <div class="tc-desc">Fils de discussion privés entre deux participants</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 14</div>
+          <div class="tc-name">message</div>
+          <div class="tc-desc">Messages textuels avec suivi de lecture</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">TABLE 15</div>
+          <div class="tc-name">notification</div>
+          <div class="tc-desc">Alertes en temps réel générées automatiquement par le système</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DETAIL -->
+    <section id="detail">
+      <div class="section-label">03 — Détail des tables</div>
+      <h2>Analyse table par table</h2>
+
+      <!-- filiere -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">filiere</span>
+          <span class="dh-tag">Référentiel</span>
+        </div>
+        <div class="detail-body">
+          <p>Stocke les cinq filières de l'IFRI. Le choix d'une table dédiée plutôt qu'un simple ENUM dans <code>utilisateur</code> est volontaire.</p>
+          <table class="field-table">
+            <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+            <tr><td class="fn">id_filiere</td><td class="ft">INT UNSIGNED</td><td class="fd">Clé primaire auto-incrémentée</td></tr>
+            <tr><td class="fn">code</td><td class="ft">VARCHAR(20) UNIQUE</td><td class="fd">Identifiant court : IA, IM, GL, SE_IoT, SI</td></tr>
+            <tr><td class="fn">libelle</td><td class="ft">VARCHAR(100)</td><td class="fd">Nom complet de la filière</td></tr>
+            <tr><td class="fn">description</td><td class="ft">TEXT</td><td class="fd">Description optionnelle</td></tr>
+          </table>
+          <div class="justif">
+            <strong>Pourquoi une table et pas un ENUM ?</strong>
+            Une table est extensible : si l'IFRI ouvre une nouvelle filière, il suffit d'ajouter une ligne sans modifier la structure du schéma. Un ENUM nécessiterait un <code>ALTER TABLE</code> sur la table utilisateur, opération lourde en production.
+          </div>
+        </div>
+      </div>
+
+      <!-- matiere -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">matiere</span>
+          <span class="dh-tag">Catalogue</span>
+        </div>
+        <div class="detail-body">
+          <p>Catalogue centralisé de toutes les matières et compétences. Toute compétence ou lacune référence obligatoirement une entrée de cette table.</p>
+          <div class="justif justif-green">
+            <strong>Justification</strong>
+            Centraliser les matières évite les doublons et fautes de frappe (ex : "Python", "python", "Python3" seraient trois entrées différentes si le texte était libre). Le catalogue garantit la cohérence des données utilisées par l'algorithme de matching.
+          </div>
+        </div>
+      </div>
+
+      <!-- utilisateur -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">utilisateur</span>
+          <span class="dh-tag">Table centrale</span>
+        </div>
+        <div class="detail-body">
+          <p>Table centrale du schéma. Tous les autres modules y font référence. Un utilisateur peut simultanément être mentor et mentoré.</p>
+          <table class="field-table">
+            <tr><th>Champ</th><th>Type</th><th>Justification</th></tr>
+            <tr><td class="fn">mot_de_passe</td><td class="ft">VARCHAR(255)</td><td class="fd">Taille 255 pour accueillir un hash bcrypt (60 à 72 caractères)</td></tr>
+            <tr><td class="fn">email / telephone</td><td class="ft">UNIQUE</td><td class="fd">Contrainte d'unicité conforme au cahier des charges</td></tr>
+            <tr><td class="fn">niveau</td><td class="ft">ENUM</td><td class="fd">Valeurs fixes et connues : L1, L2, L3, M1, M2</td></tr>
+            <tr><td class="fn">est_actif</td><td class="ft">BOOLEAN</td><td class="fd">Permet de désactiver un compte sans le supprimer</td></tr>
+            <tr><td class="fn">derniere_connexion</td><td class="ft">DATETIME NULL</td><td class="fd">NULL tant que l'utilisateur ne s'est pas encore connecté</td></tr>
+          </table>
+          <div class="justif">
+            <strong>Contrainte CHECK sur l'email</strong>
+            La contrainte <code>CHECK (email LIKE '%@%.%')</code> assure une validation minimale du format email au niveau base de données, en complément de la validation côté backend.
+          </div>
+        </div>
+      </div>
+
+      <!-- competence et lacune -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">competence_utilisateur &amp; lacune_utilisateur</span>
+          <span class="dh-tag">Profil cognitif</span>
+        </div>
+        <div class="detail-body">
+          <p>Ces deux tables modélisent le profil cognitif de chaque utilisateur, qui constitue la base de l'algorithme de matching.</p>
+          <div class="justif justif-green">
+            <strong>Pourquoi deux tables séparées ?</strong>
+            Les compétences et lacunes ont des sémantiques différentes : une compétence a un niveau de maîtrise (1 à 5), une lacune a une priorité (1 à 3) et une date de résolution. Les fusionner dans une seule table avec un champ "type" aurait rendu les requêtes de matching plus complexes et moins lisibles.
+          </div>
+          <p>La contrainte <code>UNIQUE KEY (id_utilisateur, id_matiere)</code> empêche qu'un utilisateur déclare deux fois la même compétence ou lacune pour une même matière.</p>
+          <p>La colonne <code>date_resolution</code> dans <code>lacune_utilisateur</code> permet de tracer quand une lacune a été comblée grâce au mentorat, ce qui est précieux pour le suivi des sessions.</p>
+        </div>
+      </div>
+
+      <!-- disponibilite -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">disponibilite</span>
+          <span class="dh-tag">Créneaux horaires</span>
+        </div>
+        <div class="detail-body">
+          <p>Stocke les créneaux horaires habituels d'un utilisateur sous forme structurée.</p>
+          <div class="justif">
+            <strong>Pourquoi structuré et non texte libre ?</strong>
+            Si les disponibilités étaient stockées en texte libre ("lundi après-midi"), l'algorithme de matching ne pourrait pas comparer programmatiquement deux créneaux. Le stockage structuré (<code>ENUM</code> pour le jour, <code>TIME</code> pour les heures) permet des requêtes SQL précises de chevauchement de créneaux.
+          </div>
+          <p>La contrainte <code>CHECK (heure_fin &gt; heure_debut)</code> garantit la cohérence des créneaux directement au niveau de la base de données.</p>
+        </div>
+      </div>
+
+      <!-- match_mentorat -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">match_mentorat</span>
+          <span class="dh-tag">Algorithme de matching</span>
+        </div>
+        <div class="detail-body">
+          <p>Table centrale du module de matching. Elle stocke les résultats de l'algorithme avec un score global décomposé en quatre critères conformément au cahier des charges.</p>
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="si-label">Critère 1</div>
+              <div class="si-field">score_competences</div>
+            </div>
+            <div class="score-item">
+              <div class="si-label">Critère 2</div>
+              <div class="si-field">score_horaires</div>
+            </div>
+            <div class="score-item">
+              <div class="si-label">Critère 3</div>
+              <div class="si-field">score_filiere</div>
+            </div>
+            <div class="score-item">
+              <div class="si-label">Critère 4</div>
+              <div class="si-field">score_niveau</div>
+            </div>
+          </div>
+          <div class="justif justif-green">
+            <strong>Pourquoi stocker les scores décomposés ?</strong>
+            Stocker les quatre scores séparément (et pas seulement le score total) permet au frontend d'afficher des explications claires sur le matching : "vous partagez les mêmes matières", "vos horaires sont compatibles", etc. C'est une exigence explicite du cahier des charges.
+          </div>
+          <div class="justif">
+            <strong>matieres_communes et disponibilites_communes</strong>
+            Ces deux colonnes TEXT stockent les matières et créneaux en commun calculés lors du matching. Cela évite de recalculer ces données à chaque affichage, optimisant ainsi les performances du frontend.
+          </div>
+          <p>La contrainte <code>CHECK (id_mentor &lt;&gt; id_mentore)</code> interdit qu'un utilisateur soit mis en correspondance avec lui-même. La contrainte <code>CHECK (score_total BETWEEN 0 AND 100)</code> garantit que le score reste dans une plage valide.</p>
+        </div>
+      </div>
+
+      <!-- messagerie -->
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">conversation &amp; message</span>
+          <span class="dh-tag">Messagerie</span>
+        </div>
+        <div class="detail-body">
+          <p>Le système de messagerie repose sur deux tables séparées conformément aux bonnes pratiques de modélisation.</p>
+          <div class="justif">
+            <strong>Séparation conversation / message</strong>
+            La table <code>conversation</code> garantit l'unicité d'un fil de discussion entre deux utilisateurs via <code>UNIQUE KEY (id_participant1, id_participant2)</code>. La table <code>message</code> contient les messages individuels. Cette séparation permet de récupérer la liste des conversations sans charger tous les messages, ce qui est essentiel pour les performances.
+          </div>
+          <p>Le champ <code>est_lu</code> dans <code>message</code> et le champ <code>date_dernier_msg</code> dans <code>conversation</code> permettent d'afficher les badges de messages non lus et de trier les conversations par activité récente.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- CONTRAINTES -->
+    <section id="contraintes">
+      <div class="section-label">04 — Contraintes d'intégrité</div>
+      <h2>Clés étrangères et CASCADE</h2>
+      <p>
+        Le schéma fait un usage systématique de <code>ON DELETE CASCADE</code> sur toutes les
+        clés étrangères pointant vers la table <code>utilisateur</code>.
+      </p>
+      <div class="justif justif-green">
+        <strong>Justification du CASCADE</strong>
+        Si un compte utilisateur est supprimé, toutes ses données dépendantes (compétences, lacunes,
+        disponibilités, offres, messages, notifications) sont automatiquement supprimées. Cela évite
+        les enregistrements orphelins qui pollueraient la base et fausseraient les résultats
+        de matching.
+      </div>
+      <p>
+        En revanche, <code>ON UPDATE CASCADE</code> est utilisé pour les références vers
+        <code>filiere</code> et <code>matiere</code>, car si un code de filière ou un id de matière
+        venait à changer, toutes les références seraient mises à jour automatiquement.
+      </p>
+
+      <h3>Nommage des contraintes</h3>
+      <p>
+        Toutes les contraintes sont nommées explicitement (<code>fk_comp_util</code>,
+        <code>chk_email</code>, etc.) plutôt que de laisser MySQL générer des noms aléatoires.
+        Cela facilite le débogage : les messages d'erreur MySQL affichent le nom de la contrainte
+        violée, ce qui permet d'identifier immédiatement la source du problème.
+      </p>
+    </section>
+
+    <!-- INDEX -->
+    <section id="index">
+      <div class="section-label">05 — Index</div>
+      <h2>Stratégie d'indexation</h2>
+      <p>12 index ont été définis en plus des clés primaires pour optimiser les requêtes les plus fréquentes.</p>
+
+      <table class="index-table">
+        <tr>
+          <th>Index</th>
+          <th>Table</th>
+          <th>Justification</th>
+        </tr>
+        <tr>
+          <td><code>idx_utilisateur_email</code></td>
+          <td>utilisateur</td>
+          <td>Connexion par email — requête très fréquente</td>
+        </tr>
+        <tr>
+          <td><code>idx_utilisateur_telephone</code></td>
+          <td>utilisateur</td>
+          <td>Connexion par téléphone — alternative au login email</td>
+        </tr>
+        <tr>
+          <td><code>idx_utilisateur_filiere</code></td>
+          <td>utilisateur</td>
+          <td>Filtrage des utilisateurs par filière dans le matching</td>
+        </tr>
+        <tr>
+          <td><code>idx_offre_statut</code></td>
+          <td>offre_mentorat</td>
+          <td>Affichage des offres actives uniquement</td>
+        </tr>
+        <tr>
+          <td><code>idx_offre_type</code></td>
+          <td>offre_mentorat</td>
+          <td>Filtrage offres / demandes</td>
+        </tr>
+        <tr>
+          <td><code>idx_match_score</code></td>
+          <td>match_mentorat</td>
+          <td>Tri des matchings par score décroissant</td>
+        </tr>
+        <tr>
+          <td><code>idx_match_statut</code></td>
+          <td>match_mentorat</td>
+          <td>Filtrage des matchings par statut (accepté, en attente…)</td>
+        </tr>
+        <tr>
+          <td><code>idx_message_conv</code></td>
+          <td>message</td>
+          <td>Récupération des messages d'une conversation triés par date</td>
+        </tr>
+        <tr>
+          <td><code>idx_message_lu</code></td>
+          <td>message</td>
+          <td>Comptage rapide des messages non lus</td>
+        </tr>
+        <tr>
+          <td><code>idx_notif_dest_lue</code></td>
+          <td>notification</td>
+          <td>Récupération des notifications non lues d'un utilisateur</td>
+        </tr>
+        <tr>
+          <td><code>idx_offre_mat_matiere</code></td>
+          <td>offre_matiere</td>
+          <td>Recherche d'offres par matière — exigence du cahier des charges</td>
+        </tr>
+        <tr>
+          <td><code>idx_offre_dispo_jour</code></td>
+          <td>offre_disponibilite</td>
+          <td>Recherche d'offres par créneau horaire — exigence du cahier des charges</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- VUES -->
+    <section id="vues">
+      <div class="section-label">06 — Vues SQL</div>
+      <h2>Les 3 vues définies</h2>
+
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">vue_meilleurs_matchs</span>
+          <span class="dh-tag">Matching</span>
+        </div>
+        <div class="detail-body">
+          <p>Agrège les données de <code>match_mentorat</code>, <code>utilisateur</code> et <code>filiere</code> pour retourner une ligne complète par matching incluant les informations des deux utilisateurs.</p>
+          <div class="justif">
+            <strong>Justification</strong>
+            Le frontend a besoin d'afficher le nom, la photo, la filière et le niveau des deux participants pour chaque matching. Sans cette vue, il faudrait faire plusieurs requêtes ou des jointures complexes à chaque appel API. La vue pré-calcule ces jointures et trie les résultats par score décroissant.
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">vue_profil_complet</span>
+          <span class="dh-tag">Profil</span>
+        </div>
+        <div class="detail-body">
+          <p>Retourne le profil complet d'un utilisateur avec sa filière et le nombre de ses compétences et lacunes enregistrées.</p>
+          <div class="justif justif-green">
+            <strong>Justification</strong>
+            Évite de répéter la même jointure avec <code>filiere</code> dans chaque requête de profil. Le comptage <code>COUNT(DISTINCT ...)</code> donne une indication rapide du degré de complétude du profil, utile pour inciter les utilisateurs à le compléter.
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-block">
+        <div class="detail-header">
+          <span class="dh-name">vue_messages_non_lus</span>
+          <span class="dh-tag">Messagerie</span>
+        </div>
+        <div class="detail-body">
+          <p>Compte les messages non lus par conversation et par expéditeur.</p>
+          <div class="justif">
+            <strong>Justification</strong>
+            Cette vue alimente les badges de notification non lus affichés dans l'interface de messagerie. Elle centralise la logique de comptage et évite de la réécrire dans chaque endpoint backend.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DONNEES DE TEST -->
+    <section id="donnees">
+      <div class="section-label">07 — Données de test</div>
+      <h2>Jeu de données initial</h2>
+      <p>
+        Le script inclut un jeu de données de test complet pour permettre de tester
+        l'application dès le premier déploiement, sans avoir à créer manuellement des comptes.
+      </p>
+      <div class="table-grid">
+        <div class="table-card">
+          <div class="tc-num">5 utilisateurs</div>
+          <div class="tc-name">Profils complets</div>
+          <div class="tc-desc">Un étudiant par filière, avec compétences, lacunes et disponibilités</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">6 offres</div>
+          <div class="tc-name">Offres et demandes</div>
+          <div class="tc-desc">Mix d'offres et demandes couvrant plusieurs matières et formats</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">3 matchings</div>
+          <div class="tc-name">Résultats de matching</div>
+          <div class="tc-desc">Avec scores décomposés réalistes, dont un matching accepté</div>
+        </div>
+        <div class="table-card">
+          <div class="tc-num">1 conversation</div>
+          <div class="tc-name">Messagerie active</div>
+          <div class="tc-desc">3 messages dont un non lu, pour tester les notifications</div>
+        </div>
+      </div>
+      <div class="justif justif-green">
+        <strong>Note sur les mots de passe</strong>
+        Les mots de passe dans les données de test sont des placeholders (<code>$2b$12$hash1</code>…).
+        En production, ils doivent être remplacés par de vrais hashs bcrypt générés par le backend.
+        Ne jamais stocker de mots de passe en clair.
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section id="conclusion">
+      <div class="section-label">08 — Conclusion</div>
+      <h2>Synthèse des choix</h2>
+      <p>
+        La base de données d'IFRI_MentorLink a été conçue en respectant les principes
+        fondamentaux de la modélisation relationnelle : normalisation, intégrité référentielle,
+        et performance.
+      </p>
+      <p>
+        Chaque choix technique est justifié par une exigence fonctionnelle du cahier des charges
+        ou par une bonne pratique de génie logiciel. L'architecture modulaire en 15 tables
+        permet d'ajouter de nouvelles fonctionnalités sans remettre en cause le schéma existant.
+      </p>
+      <div class="justif justif-green">
+        <strong>Points forts du schéma</strong>
+        Conformité complète au cahier des charges, intégrité garantie par les contraintes,
+        performances optimisées par les index, données de test intégrées, vues prêtes pour
+        le frontend, et extensibilité assurée par les tables référentielles.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  IFRI_MentorLink — Groupe 28 — PIL1_2526_28 — IFRI / Université d'Abomey-Calavi — 2025-2026
+</footer>
+
+</body>
+</html>
