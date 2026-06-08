@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publier une Annonce - IFRI MentorLink</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="demande_offre.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-mortarboard-fill me-2"></i>IFRI MentorLink</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="messagerie.html"><i class="bi bi-chat-text-fill me-1"></i>Messagerie</a>
+                <a class="nav-link" href="recherche.html"><i class="bi bi-search me-1"></i>Rechercher</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow border-0 rounded-3">
+                    <div class="card-body p-4 p-sm-5">
+                        <h2 class="card-title text-center mb-4 fw-bold text-primary">Créer une annonce</h2>
+                        <p class="text-muted text-center small mb-4">Remplissez ce formulaire pour publier votre offre ou votre demande de mentorat sur la plateforme.</p>
+                        
+                        <form action="#" method="POST">
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Que souhaitez-vous faire ? <span class="text-danger">*</span></label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="type" id="offre" value="offre" checked>
+                                        <label class="btn btn-outline-primary w-100 py-3" role="button" for="offre">
+                                            <i class="bi bi-person-fill-check d-block fs-3 mb-1"></i> Proposer mon aide (Offre)
+                                        </label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="type" id="demande" value="demande">
+                                        <label class="btn btn-outline-primary w-100 py-3" role="button" for="demande">
+                                            <i class="bi bi-person-fill-exclamation d-block fs-3 mb-1"></i> Demander de l'aide (Demande)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="matiere" class="form-label fw-semibold">Matière concernée <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg- text-muted"><i class="bi bi-book"></i></span>
+                                    <select class="form-select" id="matiere" name="matiere" required>
+                                        <option value="" disabled selected>Choisir une matière...</option>
+                                        <option value="Développement Web">Développement Web (HTML/CSS, JS)</option>
+                                        <option value="Python">Programmation Python</option>
+                                        <option value="Algorithmique">Algorithmique & Structures de données</option>
+                                        <option value="Bases de données">Bases de données (SQL)</option>
+                                        <option value="Machine Learning">Machine Learning / IA</option>
+                                        <option value="Systèmes embarqués">Systèmes embarqués / C</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="format" class="form-label fw-semibold">Format du mentorat <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg- text-muted"><i class="bi bi-geo-alt"></i></span>
+                                    <select class="form-select" id="format" name="format" required>
+                                        <option value="les_deux">En ligne et Présentiel (Les deux)</option>
+                                        <option value="presentiel">Présentiel uniquement (à l'IFRI)</option>
+                                        <option value="en_ligne">En ligne uniquement</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="disponibilites" class="form-label fw-semibold">Vos créneaux de disponibilité <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg- text-muted"><i class="bi bi-calendar-event"></i></span>
+                                    <textarea class="form-control" id="disponibilites" name="disponibilites" rows="2" placeholder="Ex: Lundi de 14h à 18h, Samedi matin..." required></textarea>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-semibold">Description détaillée (Optionnel)</label>
+                                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Précisez votre besoin ou vos forces (ex: chapitres précis, projets à réaliser...)"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-plus-circle-fill me-2"></i>Publier mon annonce
+                            </button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
