@@ -91,12 +91,12 @@
     <div class="modal-body">
       <div class="pub-type-choice">
         <div class="type-btn selected" id="btnTypeOffre" onclick="selectType('offre')">
-          <div class="type-icon"><img src="../assets/hand.jpg" style="width:40px;height:40px;object-fit:contain;margin:0 auto"></div>
+          <div class="type-icon"><img src="../assets/images/hand.jpg" style="width:40px;height:40px;object-fit:contain;margin:0 auto"></div>
           <div class="type-label">Offre de mentorat</div>
           <div class="type-sub">Je peux aider</div>
         </div>
         <div class="type-btn" id="btnTypeDemande" onclick="selectType('demande')">
-          <div class="type-icon"><img src="../assets/mega.jpg" style="width:40px;height:40px;object-fit:contain;margin:0 auto"></div>
+          <div class="type-icon"><img src="../assets/images/mega.jpg" style="width:40px;height:40px;object-fit:contain;margin:0 auto"></div>
           <div class="type-label">Demande de mentorat</div>
           <div class="type-sub">J'ai besoin d'aide</div>
         </div>
@@ -198,7 +198,7 @@ function renderGrid(gridId, list, users, me) {
     const fmtBadge = `<span class="badge badge-${o.format}">${o.format}</span>`;
     return `<div class="offre-card">
       <div class="offre-card-top">
-        <div class="offre-type-icon"><img src="../assets/${icon}" alt=""></div>
+        <div class="offre-type-icon"><img src="../assets/images/${icon}" alt=""></div>
         <div style="flex:1">
           <div class="offre-card-title">${o.type==='offre'?'📤 Offre':'📥 Demande'} de mentorat</div>
           <div class="offre-card-author">Par ${author?author.prenom+' '+author.nom:'Inconnu'} · ${author?author.filiere:''}</div>
