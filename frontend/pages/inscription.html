@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - IFRI_MentorLink</title>
+    <link rel="stylesheet" href="../styles/base/variables.css">
+    <link rel="stylesheet" href="../styles/base/reset.css">
+    <link rel="stylesheet" href="../styles/components/navbar.css">
+    <link rel="stylesheet" href="../styles/components/footer.css">
+    <link rel="stylesheet" href="../styles/components/buttons.css">
+    <link rel="stylesheet" href="../styles/components/forms.css">
+    <link rel="stylesheet" href="../styles/pages/auth.css">
+</head>
+<body>
+    <div id="navbar"></div>
+    <div class="auth-page">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="auth-logo"><img src="../assets/images/logo.jpg" alt="Logo"></div>
+      <h1>IFRI_<span>MentorLink</span></h1>
+      <p>Crée ton compte en 3 étapes</p>
+    </div>
+    <div class="auth-body">
+      <!-- Étapes -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="dot1">1</div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-dot" id="dot2">2</div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-dot" id="dot3">3</div>
+      </div>
+
+      <div id="alertBox" style="display:none" class="alert alert-danger mb-16"></div>
+
+      <form id="regForm">
+        <!-- ÉTAPE 1 : Infos perso -->
+        <div class="form-step active" id="step1">
+          <p class = "step-title">📋 Informations personnelles</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nom <span>*</span></label>
+              <input type="text" class="form-control" id="nom" placeholder="AKPANON" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prénom(s) <span>*</span></label>
+              <input type="text" class="form-control" id="prenom" placeholder="Ange-Miguel" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email <span>*</span></label>
+              <input type="email" class="form-control" id="email" placeholder="email@ifri.bj" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Téléphone <span>*</span></label>
+              <input type="tel" class="form-control" id="tel" placeholder="6XXXXXXXX" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Mot de passe <span>*</span></label>
+              <input type="password" class="form-control" id="pwd" placeholder="Min. 8 caractères" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmer <span>*</span></label>
+              <input type="password" class="form-control" id="pwd2" placeholder="Répéter" required>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block" onclick="goStep(2)">Suivant →</button>
+        </div>
+
+        <!-- ÉTAPE 2 : Profil académique -->
+        <div class="form-step" id="step2">
+          <p class="step-title">🎓 Profil académique</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Filière <span>*</span></label>
+              <select class="form-control" id="filiere" required>
+                <option value="">-- Choisir --</option>
+                <option>IA</option><option>IM</option>
+                <option>GL</option><option>SEIoT</option><option>SI</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Niveau <span>*</span></label>
+              <select class="form-control" id="niveau" required>
+                <option value="">-- Choisir --</option>
+                <option>L1</option><option>L2</option><option>L3</option><option>M1</option><option>M2</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rôle souhaité <span>*</span></label>
+            <select class="form-control" id="role" required>
+              <option value="">-- Choisir --</option>
+              <option value="mentor">Mentor (j'aide les autres)</option>
+              <option value="mentoré">Mentoré (je cherche de l'aide)</option>
+              <option value="both">Les deux</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio courte</label>
+            <textarea class="form-control" id="bio" placeholder="Quelques mots sur toi, tes intérêts académiques..."></textarea>
+          </div>
+          <div class="flex gap-8">
+            <button type="button" class="btn btn-secondary" onclick="goStep(1)">← Retour</button>
+            <button type="button" class="btn btn-primary" style="flex:1" onclick="goStep(3)">Suivant →</button>
+          </div>
+        </div>
+
+        <!-- ÉTAPE 3 : Compétences & disponibilités -->
+        <div class="form-step" id="step3">
+          <p class = "step-title">⭐ Compétences & disponibilités</p>
+          <div class="form-group">
+            <label class="form-label">Points forts</label>
+            <div class="competences-grid" id="competencesGrid"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Points à améliorer </label>
+            <div class="competences-grid" id="lacunesGrid"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Disponibilités habituelles</label>
+            <div id="dispoGrid" ></div>
+          </div>
+          <div class="flex gap-8 mt-16">
+            <button type="button" class="btn btn-secondary" onclick="goStep(2)">← Retour</button>
+            <button type="submit" class="btn btn-primary">✅ Créer mon compte</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="auth-footer-link">
+        Déjà inscrit ? <a href="connexion.html">Se connecter</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="footer"></div>
+<script src="../js/app.js"></script>
+<script>
+const MATIERES = ['Python','Java','HTML/CSS','JavaScript','SQL','Bases de données',
+  'Algorithmes','Mathématiques','Statistiques','Réseaux','Linux','UML',
+  'Merise','Machine Learning','Algèbre linéaire','Probabilités','Cybersécurité'];
+const DISPOS = ['Lundi 8h-12h','Lundi 14h-18h','Mardi 8h-12h','Mardi 14h-18h',
+  'Mercredi 8h-12h','Mercredi 14h-18h','Jeudi 8h-12h','Jeudi 14h-18h',
+  'Vendredi 8h-12h','Vendredi 14h-18h','Samedi 9h-12h','Samedi 14h-17h'];
+
+let selectedComp = [], selectedLac = [], selectedDispo = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderNavbar('inscription.html');
+  requireGuest();
+  buildGrids();
+});
+
+function buildGrids() {
+  const cg = document.getElementById('competencesGrid');
+  const lg = document.getElementById('lacunesGrid');
+  const dg = document.getElementById('dispoGrid');
+  MATIERES.forEach(m => {
+    cg.innerHTML += `<div class="competence-chip" data-m="${m}" onclick="toggleComp(this,'comp')">${m}</div>`;
+    lg.innerHTML += `<div class="competence-chip lacune" data-m="${m}" onclick="toggleComp(this,'lac')">${m}</div>`;
+  });
+  DISPOS.forEach(d => {
+    dg.innerHTML += `<div class="competence-chip" data-d="${d}" onclick="toggleDispo(this)">${d}</div>`;
+  });
+}
+function toggleComp(el, type) {
+  el.classList.toggle('selected');
+  const m = el.dataset.m;
+  if (type === 'comp') {
+    selectedComp = el.classList.contains('selected')
+      ? [...selectedComp, m] : selectedComp.filter(x=>x!==m);
+  } else {
+    selectedLac = el.classList.contains('selected')
+      ? [...selectedLac, m] : selectedLac.filter(x=>x!==m);
+  }
+}
+function toggleDispo(el) {
+  el.classList.toggle('selected');
+  const d = el.dataset.d;
+  selectedDispo = el.classList.contains('selected')
+    ? [...selectedDispo, d] : selectedDispo.filter(x=>x!==d);
+}
+
+function goStep(n) {
+  const alert = document.getElementById('alertBox');
+  alert.style.display = 'none';
+
+  if (n === 2) {
+    const nom = document.getElementById('nom').value.trim();
+    const prenom = document.getElementById('prenom').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const tel = document.getElementById('tel').value.trim();
+    const pwd = document.getElementById('pwd').value;
+    const pwd2 = document.getElementById('pwd2').value;
+    if (!nom||!prenom||!email||!tel||!pwd) { showAlert('Veuillez remplir tous les champs.'); return; }
+    if (pwd !== pwd2) { showAlert('Les mots de passe ne correspondent pas.'); return; }
+    const users = ML.load('ml_users', []);
+    if (users.find(u => u.email===email)) { showAlert('Cet email est déjà utilisé.'); return; }
+    if (users.find(u => u.tel===tel)) { showAlert('Ce téléphone est déjà utilisé.'); return; }
+  }
+  if (n === 3) {
+    if (!document.getElementById('filiere').value || !document.getElementById('role').value) {
+      showAlert('Veuillez choisir votre filière et votre rôle.'); return;
+    }
+  }
+
+  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById('dot'+i);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+    if (i < 3) {
+      const line = document.getElementById('line'+i);
+      line.classList.toggle('done', i < n);
+    }
+  });
+}
+
+function showAlert(msg) {
+  const a = document.getElementById('alertBox');
+  a.style.display = 'flex'; a.textContent = '❌ ' + msg;
+}
+
+document.getElementById('regForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const users = ML.load('ml_users', []);
+  const newUser = {
+    id: ML.uid(),
+    nom: document.getElementById('nom').value.trim(),
+    prenom: document.getElementById('prenom').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    tel: document.getElementById('tel').value.trim(),
+    password: document.getElementById('pwd').value,
+    filiere: document.getElementById('filiere').value,
+    niveau: document.getElementById('niveau').value || 'L1',
+    role: document.getElementById('role').value,
+    bio: document.getElementById('bio').value,
+    competences: selectedComp,
+    lacunes: selectedLac,
+    disponibilites: selectedDispo,
+    photo: null
+  };
+  users.push(newUser);
+  ML.save('ml_users', users);
+  ML.login(newUser);
+  showToast('Compte créé avec succès ! Bienvenue 🎉');
+  setTimeout(() => window.location.href = 'accueil.html', 900);
+});
+</script>
+</html>

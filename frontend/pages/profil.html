@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Profil — IFRI_MentorLink</title>
+  <link rel="stylesheet" href="../styles/base/reset.css">
+  <link rel="stylesheet" href="../styles/base/variables.css">
+  <link rel="stylesheet" href="../styles/components/buttons.css">
+  <link rel="stylesheet" href="../styles/components/cards.css">
+  <link rel="stylesheet" href="../styles/components/navbar.css">
+  <link rel="stylesheet" href="../styles/components/footer.css">
+  <link rel="stylesheet" href="../styles/components/forms.css">
+  <link rel="stylesheet" href="../styles/components/avatar.css">
+  <link rel="stylesheet" href="../styles/components/badges.css">
+  <link rel="stylesheet" href="../styles/pages/profil.css">
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <div class="profile-hero">
+    <div class="container">
+      <div class="profile-hero-inner">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profileAvatar"></div>
+          <div class="profile-edit-avatar" id="avatarEditBtn" title="Changer la photo">📷</div>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none">
+        </div>
+        <div style="flex:1">
+          <div class="profile-name" id="profileName">Chargement...</div>
+          <div class="profile-sub" id="profileSub"></div>
+          <div class="profile-badges" id="profileBadges"></div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-ghost" id="editToggleBtn" onclick="toggleEdit()">✏️ Modifier le profil</button>
+          <a id="msgBtn" href="#" class="btn btn-primary" style="display:none">💬 Contacter</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-page">
+    <div class="container">
+      <div class="profile-grid">
+        <!-- COLONNE PRINCIPALE -->
+        <div>
+          <!-- VUE -->
+          <div class="view-section" id="viewSection">
+            <div class="card card-accent mb-24">
+              <div class="card-title">👤 Informations personnelles</div>
+              <div id="infoRows" class="mt-12"></div>
+            </div>
+            <div class="card card-accent mb-24">
+              <div class="card-title mb-16">⭐ Compétences</div>
+              <div class="section-label">Points forts</div>
+              <div class="chips-list mt-8" id="compChips"></div>
+              <div class="section-label mt-16">Points à améliorer</div>
+              <div class="chips-list mt-8" id="lacChips"></div>
+            </div>
+            <div class="card card-accent">
+              <div class="card-title mb-16">🕐 Disponibilités</div>
+              <div class="chips-list" id="dispoChips"></div>
+            </div>
+          </div>
+
+          <!-- ÉDITION -->
+          <div class="edit-section" id="editSection">
+            <div class="card card-accent mb-24">
+              <div class="card-title mb-16">✏️ Modifier le profil</div>
+              <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div class="form-group"><label class="form-label">Nom</label><input type="text" class="form-control"
+                    id="eNom"></div>
+                <div class="form-group"><label class="form-label">Prénom</label><input type="text" class="form-control"
+                    id="ePrenom"></div>
+              </div>
+              <div class="form-group"><label class="form-label">Bio</label><textarea class="form-control"
+                  id="eBio"></textarea></div>
+              <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div class="form-group">
+                  <label class="form-label">Filière</label>
+                  <select class="form-control" id="eFiliere">
+                    <option>IA</option>
+                    <option>IM</option>
+                    <option>GL</option>
+                    <option>SE&IoT</option>
+                    <option>SI</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Niveau</label>
+                  <select class="form-control" id="eNiveau">
+                    <option>L1</option>
+                    <option>L2</option>
+                    <option>L3</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Rôle</label>
+                <select class="form-control" id="eRole">
+                  <option value="mentor">Mentor</option>
+                  <option value="mentoré">Mentoré</option>
+                  <option value="both">Les deux</option>
+                </select>
+              </div>
+            </div>
+            <div class="card card-accent mb-24">
+              <div class="card-title mb-12">⭐ Points forts <small
+                  style="color:var(--muted);font-weight:400;font-size:12px">(clique pour sélectionner)</small></div>
+              <div class="comp-grid" id="editCompGrid"></div>
+              <div class="card-title mb-12 mt-16">⚠️ Points faibles</div>
+              <div class="comp-grid" id="editLacGrid"></div>
+            </div>
+            <div class="card card-accent mb-24">
+              <div class="card-title mb-12">🕐 Disponibilités</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px"
+                id="editDispoGrid"></div>
+            </div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary" onclick="toggleEdit()">Annuler</button>
+              <button class="btn btn-primary" onclick="saveProfile()">💾 Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div>
+          <div class="card card-accent mb-16">
+            <div class="card-title mb-12">📊 Statistiques</div>
+            <div id="profileStats"></div>
+          </div>
+          <div class="card card-accent mb-16">
+            <div class="card-title mb-12">📋 Publications récentes</div>
+            <div id="profilePubs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+  <script src="../js/app.js"></script>
+  <script>
+    const MATIERES = ['Python', 'Java', 'HTML/CSS', 'JavaScript', 'SQL', 'Bases de données', 'Algorithmes', 'Mathématiques', 'Statistiques', 'Réseaux', 'Linux', 'UML', 'Merise', 'Machine Learning', 'Algèbre linéaire', 'Probabilités', 'Cybersécurité'];
+    const DISPOS = ['Lundi 8h-12h', 'Lundi 14h-18h', 'Mardi 8h-12h', 'Mardi 14h-18h', 'Mercredi 8h-12h', 'Mercredi 14h-18h', 'Jeudi 8h-12h', 'Jeudi 14h-18h', 'Vendredi 8h-12h', 'Vendredi 14h-18h', 'Samedi 9h-12h', 'Samedi 14h-17h'];
+
+    let editComp = [], editLac = [], editDispo = [];
+    let isOwnProfile = true;
+    let profileUser = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNavbar('profil.html');
+      requireAuth();
+      const me = ML.currentUser();
+      const params = new URLSearchParams(window.location.search);
+      const otherId = params.get('id');
+      const users = ML.load('ml_users', []);
+
+      if (otherId && otherId !== me.id) {
+        isOwnProfile = false;
+        profileUser = users.find(u => u.id === otherId) || me;
+        document.getElementById('editToggleBtn').style.display = 'none';
+        document.getElementById('msgBtn').style.display = 'inline-flex';
+        document.getElementById('msgBtn').href = 'messagerie.html?user=' + otherId;
+      } else {
+        profileUser = me;
+      }
+
+      renderProfile();
+      buildEditGrids();
+    });
+
+    function renderProfile() {
+      const u = profileUser;
+      const initials = ML.initials(u.prenom + ' ' + u.nom);
+
+      // Avatar
+      const avatarEl = document.getElementById('profileAvatar');
+      if (u.photo) { avatarEl.innerHTML = `<img src="${u.photo}" alt="Photo">`; }
+      else { avatarEl.textContent = initials; }
+
+      if (!isOwnProfile) document.getElementById('avatarEditBtn').style.display = 'none';
+
+      document.getElementById('profileName').textContent = u.prenom + ' ' + u.nom;
+      document.getElementById('profileSub').textContent = u.email + ' · ' + u.tel;
+      document.getElementById('profileBadges').innerHTML = `
+    <span class="badge badge-green">${u.filiere}</span>
+    <span class="badge badge-dark">${u.niveau}</span>
+    <span class="badge" style="background:var(--g4);color:var(--g1)">${u.role}</span>`;
+
+      // Infos
+      document.getElementById('infoRows').innerHTML = [
+        { icon: '🏫', label: 'Filière & Niveau', value: u.filiere + ' · ' + u.niveau },
+        { icon: '🎭', label: 'Rôle', value: u.role === 'both' ? 'Mentor & Mentoré' : u.role },
+        { icon: '📝', label: 'Bio', value: u.bio || 'Non renseigné' },
+        { icon: '📧', label: 'Email', value: u.email },
+        { icon: '📞', label: 'Téléphone', value: u.tel },
+      ].map(r => `<div class="info-row"><div class="info-icon">${r.icon}</div><div><div class="info-label">${r.label}</div><div class="info-value">${r.value}</div></div></div>`).join('');
+
+      // Compétences
+      const compEl = document.getElementById('compChips');
+      compEl.innerHTML = (u.competences || []).length ? (u.competences || []).map(c => `<span class="badge badge-green">✅ ${c}</span>`).join('') : '<span class="text-muted">Non renseigné</span>';
+      const lacEl = document.getElementById('lacChips');
+      lacEl.innerHTML = (u.lacunes || []).length ? (u.lacunes || []).map(l => `<span class="badge" style="background:#FEE2E2;color:var(--danger)">⚠️ ${l}</span>`).join('') : '<span class="text-muted">Non renseigné</span>';
+      const dispoEl = document.getElementById('dispoChips');
+      dispoEl.innerHTML = (u.disponibilites || []).length ? (u.disponibilites || []).map(d => `<span class="badge" style="background:#E0E7FF;color:#3730A3">🕐 ${d}</span>`).join('') : '<span class="text-muted">Non renseigné</span>';
+
+      // Stats
+      const offres = ML.load('ml_offres', []).filter(o => o.userId === u.id);
+      const msgs = ML.load('ml_messages', []).filter(m => m.senderId === u.id || m.receiverId === u.id);
+      document.getElementById('profileStats').innerHTML = [
+        { label: 'Publications', val: offres.length },
+        { label: 'Messages', val: msgs.length },
+        { label: 'Compétences', val: (u.competences || []).length },
+        { label: 'Lacunes', val: (u.lacunes || []).length },
+      ].map(s => `<div class="info-row"><div class="info-value" style="font-size:22px;font-weight:900;color:var(--g2)">${s.val}</div><div class="info-label">${s.label}</div></div>`).join('');
+
+      // Pubs
+      const pubsEl = document.getElementById('profilePubs');
+      pubsEl.innerHTML = offres.length
+        ? offres.slice(0, 3).map(o => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">${o.type === 'offre' ? '📤' : '📥'} ${(o.matieres || []).join(', ')} <span style="float:right">${ML.timeAgo(o.date)}</span></div>`).join('')
+        : '<p class="text-muted" style="font-size:12px">Aucune publication.</p>';
+    }
+
+    function buildEditGrids() {
+      const u = profileUser;
+      editComp = [...(u.competences || [])];
+      editLac = [...(u.lacunes || [])];
+      editDispo = [...(u.disponibilites || [])];
+
+      const cg = document.getElementById('editCompGrid');
+      const lg = document.getElementById('editLacGrid');
+      cg.innerHTML = ''; lg.innerHTML = '';
+      MATIERES.forEach(m => {
+        cg.innerHTML += `<div class="comp-chip ${editComp.includes(m) ? 'selected-comp' : ''}" onclick="toggleEC(this,'comp','${m}')">${m}</div>`;
+        lg.innerHTML += `<div class="comp-chip ${editLac.includes(m) ? 'selected-lac' : ''}" onclick="toggleEC(this,'lac','${m}')">${m}</div>`;
+      });
+      const dg = document.getElementById('editDispoGrid');
+      dg.innerHTML = DISPOS.map(d => `<div class="dispo-chip ${editDispo.includes(d) ? 'selected' : ''}" onclick="toggleED(this,'${d}')">${d}</div>`).join('');
+
+      // Pre-fill form
+      document.getElementById('eNom').value = u.nom;
+      document.getElementById('ePrenom').value = u.prenom;
+      document.getElementById('eBio').value = u.bio || '';
+      document.getElementById('eFiliere').value = u.filiere;
+      document.getElementById('eNiveau').value = u.niveau;
+      document.getElementById('eRole').value = u.role;
+    }
+
+    function toggleEC(el, type, m) {
+      if (type === 'comp') {
+        el.classList.toggle('selected-comp');
+        editComp = el.classList.contains('selected-comp') ? [...editComp, m] : editComp.filter(x => x !== m);
+      } else {
+        el.classList.toggle('selected-lac');
+        editLac = el.classList.contains('selected-lac') ? [...editLac, m] : editLac.filter(x => x !== m);
+      }
+    }
+    function toggleED(el, d) {
+      el.classList.toggle('selected');
+      editDispo = el.classList.contains('selected') ? [...editDispo, d] : editDispo.filter(x => x !== d);
+    }
+
+    function toggleEdit() {
+      document.getElementById('editSection').classList.toggle('active');
+      document.getElementById('viewSection').classList.toggle('hidden');
+      const btn = document.getElementById('editToggleBtn');
+      btn.textContent = document.getElementById('editSection').classList.contains('active') ? '← Vue' : '✏️ Modifier';
+    }
+
+    function saveProfile() {
+      const users = ML.load('ml_users', []);
+      const idx = users.findIndex(u => u.id === profileUser.id);
+      if (idx === -1) return;
+      const updated = {
+        ...users[idx],
+        nom: document.getElementById('eNom').value.trim(),
+        prenom: document.getElementById('ePrenom').value.trim(),
+        bio: document.getElementById('eBio').value,
+        filiere: document.getElementById('eFiliere').value,
+        niveau: document.getElementById('eNiveau').value,
+        role: document.getElementById('eRole').value,
+        competences: editComp,
+        lacunes: editLac,
+        disponibilites: editDispo
+      };
+      users[idx] = updated;
+      ML.save('ml_users', users);
+      ML.login(updated);
+      profileUser = updated;
+      renderProfile();
+      toggleEdit();
+      showToast('Profil mis à jour ! ✅');
+    }
+
+    // Photo de profil
+    document.getElementById('avatarEditBtn').addEventListener('click', () => {
+      document.getElementById('avatarInput').click();
+    });
+    document.getElementById('avatarInput').addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const users = ML.load('ml_users', []);
+        const idx = users.findIndex(u => u.id === profileUser.id);
+        users[idx].photo = e.target.result;
+        ML.save('ml_users', users);
+        ML.login(users[idx]);
+        profileUser = users[idx];
+        renderProfile();
+        showToast('Photo mise à jour ! 📸');
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+
+</html>

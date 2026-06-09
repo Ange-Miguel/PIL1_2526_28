@@ -1,0 +1,60 @@
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.badge-green {
+  background: var(--g6);
+  color: var(--g2);
+  border: 1px solid var(--border);
+}
+
+.badge-dark {
+  background: var(--g1);
+  color: var(--g5);
+}
+
+.badge-ia {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.badge-im {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.badge-gl {
+  background: #EDE9FE;
+  color: #5B21B6;
+}
+
+.badge-seiot {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.badge-si {
+  background: #CCFBF1;
+  color: #134E4A;
+}
+
+.badge-online {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.badge-presentiel {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.badge-hybrid {
+  background: #E0E7FF;
+  color: #3730A3;
+}

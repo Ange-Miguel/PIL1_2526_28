@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Accueil - IFRI_MentorLink</title>
+    <link rel="stylesheet" href="../styles/base/variables.css">
+    <link rel="stylesheet" href="../styles/base/reset.css">
+    <link rel="stylesheet" href="../styles/components/navbar.css">
+    <link rel="stylesheet" href="../styles/components/footer.css">
+    <link rel="stylesheet" href="../styles/components/buttons.css">
+    <link rel="stylesheet" href="../styles/components/forms.css">
+    <link rel="stylesheet" href="../styles/components/cards.css">
+    <link rel="stylesheet" href="../styles/components/avatar.css">
+    <link rel="stylesheet" href="../styles/components/badges.css">
+    <link rel="stylesheet" href="../styles/pages/accueil.css">
+
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <!-- HERO DASHBOARD -->
+    <div class="hero-dash">
+        <div class="container">
+            <div class="hero-dash-inner">
+                <div class="hero-dash-avatar" id="dashAvatar"></div>
+                <div class="hero-dash-text">
+                    <h1>Bonjour, <span id="dashName">...</span> 👋</h1>
+                    <p id="dashSub">Bienvenue sur IFRI_MentorLink</p>
+                </div>
+                <div class="hero-dash-actions">
+                    <a href="offres.html" class="btn btn-ghost">+ Publier une offre</a>
+                    <a href="matching.html" class="btn btn-primary">Trouver un match ✨</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard">
+        <div class="container">
+            <!-- Stats -->
+            <div class="dash-grid">
+                <div class="stat-card">
+                    <div class="stat-card-label">Étudiants inscrits</div>
+                    <div class="stat-card-num" id="sUsers">0</div>
+                    <div class="stat-card-sub">Sur la plateforme</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Offres actives</div>
+                    <div class="stat-card-num" id="sOffres">0</div>
+                    <div class="stat-card-sub">Disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Demandes actives</div>
+                    <div class="stat-card-num" id="sDemandes">0</div>
+                    <div class="stat-card-sub">En attente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">Mes messages</div>
+                    <div class="stat-card-num" id="sMsgs">0</div>
+                    <div class="stat-card-sub"><a href="messagerie.html">Voir
+                            →</a></div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="two-col">
+                <!-- Dernières offres/demandes -->
+                <div class="card card-accent">
+                    <div class="section-head">
+                        <h2>📋 Offres & Demandes récentes</h2>
+                        <a href="offres.html" class="btn btn-secondary btn-sm">Tout voir</a>
+                    </div>
+                    <div id="recentOffres">
+                        <p class="text-muted">Chargement...</p>
+                    </div>
+                </div>
+
+                <!-- Membres -->
+                <div class="card card-accent">
+                    <div class="section-head">
+                        <h2>👥 Membres récents</h2>
+                        <a href="matching.html" class="btn btn-secondary btn-sm">Matcher</a>
+                    </div>
+                    <div id="recentUsers">
+                        <p class="text-muted">Chargement...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mes compétences -->
+            <div class="card card-accent mt-24">
+                <div class="section-head">
+                    <h2>⭐ Mon profil rapide</h2>
+                    <a href="profil.html" class="btn btn-secondary btn-sm">Modifier</a>
+                </div>
+                <div id="myProfile">
+                    <p class="text-muted">Chargement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNavbar('accueil.html');
+            requireAuth();
+            const user = ML.currentUser();
+            const users = ML.load('ml_users', []);
+            const offres = ML.load('ml_offres', []);
+            const msgs = ML.load('ml_messages', []);
+
+            // Hero
+            document.getElementById('dashAvatar').textContent = ML.initials(user.prenom + ' ' + user.nom);
+            document.getElementById('dashName').textContent = user.prenom;
+            document.getElementById('dashSub').textContent = user.filiere + ' · ' + user.niveau + ' · ' + (user.role === 'both' ? 'Mentor & Mentoré' : user.role);
+
+            // Stats
+            document.getElementById('sUsers').textContent = users.length;
+            document.getElementById('sOffres').textContent = offres.filter(o => o.type === 'offre').length;
+            document.getElementById('sDemandes').textContent = offres.filter(o => o.type === 'demande').length;
+            const myMsgs = msgs.filter(m => m.receiverId === user.id || m.senderId === user.id);
+            document.getElementById('sMsgs').textContent = myMsgs.length;
+
+            // Offres récentes
+            const recentEl = document.getElementById('recentOffres');
+            const recent = [...offres].sort((a, b) => b.date - a.date).slice(0, 4);
+            if (!recent.length) { recentEl.innerHTML = '<p class="text-muted">Aucune offre pour l\'instant.</p>'; }
+            else {
+                recentEl.innerHTML = recent.map(o => {
+                    const author = users.find(u => u.id === o.userId);
+                    const icon = o.type === 'offre' ? 'hand.jpg' : 'mega.jpg';
+                    const tags = o.matieres.slice(0, 3).map(m => `<span class="badge badge-green">${m}</span>`).join('');
+                    return `<div class="offre-item">
+        <div class="offre-icon"><img src="../assets/images/${icon}" alt=""></div>
+        <div style="flex:1">
+          <div class="offre-title">${o.type === 'offre' ? '📤 Offre' : '📥 Demande'} — ${author ? author.prenom + ' ' + author.nom : '?'}</div>
+          <div class="offre-meta">${ML.timeAgo(o.date)} · ${o.format}</div>
+          <div class="offre-tags">${tags}</div>
+        </div>
+      </div>`;
+                }).join('');
+            }
+
+            // Users récents
+            const usersEl = document.getElementById('recentUsers');
+            const others = users.filter(u => u.id !== user.id).slice(0, 4);
+            usersEl.innerHTML = others.map(u => {
+                const badgeClass = 'badge-' + u.filiere.toLowerCase().replace('&', '').replace('iot', 'seiot').replace('seiot', 'seiot');
+                return `<div class="user-item">
+      <div class="avatar avatar-sm">${ML.initials(u.prenom + ' ' + u.nom)}</div>
+      <div style="flex:1">
+        <div class="user-info-name">${u.prenom} ${u.nom}</div>
+        <div class="user-info-sub">${u.filiere} · ${u.role}</div>
+      </div>
+      <span class="badge badge-green">${u.filiere}</span>
+    </div>`;
+            }).join('');
+
+            // My profile quick view
+            const myEl = document.getElementById('myProfile');
+            const compTags = (user.competences || []).map(c => `<span class="badge badge-green">✅ ${c}</span>`).join(' ');
+            const lacTags = (user.lacunes || []).map(l => `<span class="badge" style="background:#FEE2E2;color:var(--danger);">⚠️ ${l}</span>`).join(' ');
+            const dispoTags = (user.disponibilites || []).map(d => `<span class="badge badge-green">🕐 ${d}</span>`).join(' ');
+            myEl.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:20px;">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:11px;font-weight:800;color:var(--g4);text-transform:uppercase;margin-bottom:8px;letter-spacing:1px">Points forts</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${compTags || '<span class="text-muted">Non renseigné</span>'}</div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:11px;font-weight:800;color:var(--danger);text-transform:uppercase;margin-bottom:8px;letter-spacing:1px">À améliorer</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${lacTags || '<span class="text-muted">Non renseigné</span>'}</div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:11px;font-weight:800;color:var(--g2);text-transform:uppercase;margin-bottom:8px;letter-spacing:1px">Disponibilités</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${dispoTags || '<span class="text-muted">Non renseigné</span>'}</div>
+      </div>
+    </div>`;
+        });
+    </script>
+</body>
+
+</html>

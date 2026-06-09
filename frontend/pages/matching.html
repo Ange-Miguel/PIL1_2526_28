@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matching - IFRI_MentorLink</title>
+    <link rel="stylesheet" href="../styles/base/variables.css">
+    <link rel="stylesheet" href="../styles/base/reset.css">
+    <link rel="stylesheet" href="../styles/components/navbar.css">
+    <link rel="stylesheet" href="../styles/components/footer.css">
+    <link rel="stylesheet" href="../styles/components/buttons.css">
+    <link rel="stylesheet" href="../styles/pages/matching.css">
+    <link rel="stylesheet" href="../styles/components/forms.css">
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <div class="page-hero">
+        <div class="container">
+            <div class="section-label">Algorithme de matching</div>
+            <h1>Trouve ton <span>mentor idéal</span></h1>
+            <p>Notre algorithme analyse la compatibilité des compétences, la proximité des filières et la compatibilité
+                horaire pour te proposer les meilleurs profils.</p>
+        </div>
+    </div>
+
+    <div class="matching-section">
+        <div class="container">
+            <!-- Filtres -->
+            <div class="filter-bar">
+                <div class="form-group">
+                    <label class="form-label">Je cherche un</label>
+                    <select class="form-control" id="filterRole">
+                        <option value="">Mentor ou Mentoré</option>
+                        <option value="mentor">Mentor (qui peut m'aider)</option>
+                        <option value="mentoré">Mentoré (qui a besoin d'aide)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Matière clé</label>
+                    <select class="form-control" id="filterMatiere">
+                        <option value="">Toutes les matières</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Filière</label>
+                    <select class="form-control" id="filterFiliere">
+                        <option value="">Toutes</option>
+                        <option>IA</option>
+                        <option>IM</option>
+                        <option>GL</option>
+                        <option>SE&IoT</option>
+                        <option>SI</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="runMatching()">🔍 Lancer le matching</button>
+            </div>
+
+            <!-- Résultats -->
+            <div id="matchResults">
+                <div class="empty-state">
+                    <div class="empty-icon">🤝</div>
+                    <h3>Prêt à trouver ton match ?</h3>
+                    <p>Lance le matching pour voir les profils les plus compatibles avec le tien.</p>
+                    <button class="btn btn-primary btn-lg mt-16" onclick="runMatching()">Démarrer le matching</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNavbar('matching.html');
+            requireAuth();
+            const allUsers = ML.load('ml_users', []);
+            const matieres = new Set();
+            allUsers.forEach(u => {
+                (u.competences || []).forEach(m => matieres.add(m));
+                (u.lacunes || []).forEach(m => matieres.add(m));
+            });
+            const sel = document.getElementById('filterMatiere');
+            [...matieres].sort().forEach(m => {
+                sel.innerHTML += `<option>${m}</option>`;
+            });
+        });
+
+        function calcScore(me, other) {
+            let score = 0;
+            const myComp = me.competences || [];
+            const myLac = me.lacunes || [];
+            const otherComp = other.competences || [];
+            const otherLac = other.lacunes || [];
+            const myDispo = me.disponibilites || [];
+            const otherDispo = other.disponibilites || [];
+
+            // Compatibilité compétences/lacunes (40 pts)
+            const compMatch = myLac.filter(l => otherComp.includes(l));
+            const lacMatch = myComp.filter(c => otherLac.includes(c));
+            score += (compMatch.length / Math.max(myLac.length, 1)) * 40;
+
+            // Compatibilité horaire (30 pts)
+            const dispoMatch = myDispo.filter(d => otherDispo.includes(d));
+            score += (dispoMatch.length / Math.max(Math.min(myDispo.length, otherDispo.length, 1), 1)) * 30;
+
+            // Proximité filière (20 pts)
+            if (me.filiere === other.filiere) score += 20;
+            else if (me.niveau === other.niveau) score += 8;
+
+            // Rôle complémentaire (10 pts)
+            if ((me.role === 'mentoré' && (other.role === 'mentor' || other.role === 'both')) ||
+                (me.role === 'mentor' && (other.role === 'mentoré' || other.role === 'both')) ||
+                (me.role === 'both')) score += 10;
+
+            return {
+                score: Math.round(Math.min(score, 100)),
+                compMatch, lacMatch, dispoMatch
+            };
+        }
+
+        function runMatching() {
+            const me = ML.currentUser();
+            const allUsers = ML.load('ml_users', []);
+            const roleFilter = document.getElementById('filterRole').value;
+            const matiereFilter = document.getElementById('filterMatiere').value;
+            const filiereFilter = document.getElementById('filterFiliere').value;
+
+            let candidates = allUsers.filter(u => u.id !== me.id);
+
+            if (roleFilter) {
+                candidates = candidates.filter(u => u.role === roleFilter || u.role === 'both');
+            }
+            if (filiereFilter) {
+                candidates = candidates.filter(u => u.filiere === filiereFilter);
+            }
+            if (matiereFilter) {
+                candidates = candidates.filter(u =>
+                    (u.competences || []).includes(matiereFilter) || (u.lacunes || []).includes(matiereFilter)
+                );
+            }
+
+            const results = candidates.map(u => ({ user: u, ...calcScore(me, u) }))
+                .sort((a, b) => b.score - a.score);
+
+            const el = document.getElementById('matchResults');
+            if (!results.length) {
+                el.innerHTML = `<div class="empty-state"><div class="empty-icon">😕</div><h3>Aucun résultat</h3><p>Essaie de modifier tes filtres ou de compléter ton profil.</p></div>`;
+                return;
+            }
+
+            el.innerHTML = `
+    <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+      <p style="color:var(--muted);font-size:13px;font-weight:600;">${results.length} profil(s) compatible(s) trouvé(s)</p>
+    </div>
+    <div class="match-grid">
+      ${results.map(r => renderMatchCard(r)).join('')}
+    </div>`;
+        }
+
+        function renderMatchCard({ user, score, compMatch, lacMatch, dispoMatch }) {
+            const pct = score;
+            const deg = Math.round(pct * 3.6);
+            const color = pct >= 70 ? 'var(--g4)' : pct >= 40 ? 'var(--warn)' : '#ccc';
+            const initials = ML.initials(user.prenom + ' ' + user.nom);
+            const compTags = compMatch.slice(0, 3).map(m => `<span class="badge badge-green">✅ ${m}</span>`).join(' ');
+            const dispoTags = dispoMatch.slice(0, 2).map(d => `<span class="badge" style="background:#E0E7FF;color:#3730A3;">🕐 ${d}</span>`).join(' ');
+
+            return `<div class="match-card">
+    <div class="match-card-header">
+      <div class="avatar avatar-md">${initials}</div>
+      <div style="flex:1">
+        <div class="match-user-name">${user.prenom} ${user.nom}</div>
+        <div class="match-user-sub">${user.filiere} · ${user.niveau} · ${user.role}</div>
+        <div class="score-bar mt-4"><div class="score-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div style="font-size:22px;font-weight:900;color:${color}">${pct}%</div>
+        <div style="font-size:10px;color:var(--g5);font-weight:600">Score</div>
+      </div>
+    </div>
+    <div class="match-card-body">
+      ${user.bio ? `<p style="font-size:12px;color:var(--muted);margin:0 0 10px;font-style:italic">"${user.bio}"</p>` : ''}
+      ${compTags ? `<div class="match-section-title">Peut t'aider en</div><div class="match-tags">${compTags}</div>` : ''}
+      ${dispoTags ? `<div class="match-section-title">Disponibilités communes</div><div class="match-tags">${dispoTags}</div>` : ''}
+    </div>
+    <div class="match-card-footer">
+      <a href="messagerie.html?user=${user.id}" class="btn btn-primary btn-sm" style="flex:1">💬 Contacter</a>
+      <a href="profil.html?id=${user.id}" class="btn btn-secondary btn-sm">👤 Profil</a>
+    </div>
+  </div>`;
+        }
+    </script>
+</body>
+
+</html>

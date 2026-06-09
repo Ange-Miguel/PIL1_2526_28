@@ -1,0 +1,26 @@
+/* ── FOOTER ───────────────────────────────────────────────────── */
+.site-footer {
+  background: var(--g1);
+  color: var(--g5);
+  padding: 36px 0;
+  text-align: center;
+  margin-top: auto;
+}
+
+.footer-logo {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--white);
+  margin-bottom: 6px;
+  letter-spacing: -.5px;
+}
+
+.footer-logo span {
+  color: var(--g4);
+}
+
+.site-footer p {
+  color: var(--g5);
+  font-size: 12px;
+  margin: 0;
+}
