@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../styles/components/footer.css">
     <link rel="stylesheet" href="../styles/components/buttons.css">
     <link rel="stylesheet" href="../styles/components/forms.css">
+    <link rel="stylesheet" href="../styles/components/modals.css">
     <link rel="stylesheet" href="../styles/pages/auth.css">
 
 
@@ -58,7 +59,7 @@
                         <label class="remember-label">
                             <input type="checkbox" id="remember"> Se souvenir de moi
                         </label>
-                        <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+                        <a href="#" class="forgot-link" id="forgotLink">Mot de passe oublié ?</a>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
                         Se connecter
@@ -78,6 +79,69 @@
 
                 <div class="auth-footer-link">
                     Pas encore de compte ? <a href="inscription.html">S'inscrire</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MODALE : MOT DE PASSE OUBLIÉ ──────────────────────── -->
+    <div class="modal-overlay" id="modalForgot">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">🔑 Mot de passe oublié</span>
+                <button class="modal-close" onclick="closeModal('modalForgot')">✕</button>
+            </div>
+
+            <!-- Étape 1 : saisie de l'email -->
+            <div id="stepEmail" class="modal-body">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">
+                    Entrez votre adresse email. Un code de réinitialisation vous sera fourni.
+                </p>
+                <div id="forgotAlert" class="alert alert-danger mb-16" style="display:none;"></div>
+                <div class="form-group">
+                    <label class="form-label">Email <span>*</span></label>
+                    <div class="input-icon-wrap">
+                        <span class="input-icon">📧</span>
+                        <input type="email" class="form-control" id="forgotEmail"
+                            placeholder="votre@email.bj">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border:none;padding:16px 0 0;">
+                    <button class="btn btn-secondary btn-sm" onclick="closeModal('modalForgot')">Annuler</button>
+                    <button class="btn btn-primary btn-sm" id="btnSendReset" onclick="sendResetRequest()">
+                        Envoyer le code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Étape 2 : saisie du token + nouveau mot de passe -->
+            <div id="stepReset" class="modal-body" style="display:none;">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">
+                    Un code a été généré. Entrez-le ci-dessous avec votre nouveau mot de passe.
+                </p>
+                <div id="resetAlert" class="alert alert-danger mb-16" style="display:none;"></div>
+                <div class="form-group">
+                    <label class="form-label">Code de réinitialisation <span>*</span></label>
+                    <div class="input-icon-wrap">
+                        <span class="input-icon">🔐</span>
+                        <input type="text" class="form-control" id="resetToken"
+                            placeholder="Collez le code reçu">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nouveau mot de passe <span>*</span></label>
+                    <div class="input-icon-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" class="form-control" id="newPassword"
+                            placeholder="Nouveau mot de passe">
+                        <button type="button" class="password-toggle" id="toggleNewPwd">👁</button>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border:none;padding:16px 0 0;">
+                    <button class="btn btn-secondary btn-sm" onclick="goBackToEmail()">← Retour</button>
+                    <button class="btn btn-primary btn-sm" onclick="confirmReset()">
+                        Réinitialiser
+                    </button>
                 </div>
             </div>
         </div>
@@ -121,7 +185,129 @@
 
         function demoLogin(email) {
             login(email, '1234');
-        } 
+        }
+
+        /* ── MOT DE PASSE OUBLIÉ ──────────────────────────────── */
+
+        // Ouvrir la modale depuis le lien
+        document.getElementById('forgotLink').addEventListener('click', function (e) {
+            e.preventDefault();
+            resetForgotModal();
+            openModal('modalForgot');
+        });
+
+        // Afficher/masquer le nouveau mot de passe
+        document.getElementById('toggleNewPwd').addEventListener('click', function () {
+            const inp = document.getElementById('newPassword');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            this.textContent = inp.type === 'password' ? '👁' : '🙈';
+        });
+
+        // Réinitialiser l'état de la modale à l'ouverture
+        function resetForgotModal() {
+            document.getElementById('stepEmail').style.display = 'block';
+            document.getElementById('stepReset').style.display = 'none';
+            document.getElementById('forgotEmail').value = '';
+            document.getElementById('resetToken').value = '';
+            document.getElementById('newPassword').value = '';
+            hideForgotAlert();
+            hideResetAlert();
+        }
+
+        // Retour à l'étape email depuis l'étape token
+        function goBackToEmail() {
+            document.getElementById('stepEmail').style.display = 'block';
+            document.getElementById('stepReset').style.display = 'none';
+            hideResetAlert();
+        }
+
+        // Afficher/masquer les alertes
+        function showForgotAlert(msg) {
+            const el = document.getElementById('forgotAlert');
+            el.textContent = '❌ ' + msg;
+            el.style.display = 'flex';
+        }
+        function hideForgotAlert() {
+            document.getElementById('forgotAlert').style.display = 'none';
+        }
+        function showResetAlert(msg) {
+            const el = document.getElementById('resetAlert');
+            el.textContent = '❌ ' + msg;
+            el.style.display = 'flex';
+        }
+        function hideResetAlert() {
+            document.getElementById('resetAlert').style.display = 'none';
+        }
+
+        // ÉTAPE 1 — Demande de réinitialisation
+        function sendResetRequest() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            if (!email) { showForgotAlert('Veuillez entrer votre email.'); return; }
+
+            const btn = document.getElementById('btnSendReset');
+            btn.disabled = true;
+            btn.textContent = 'Envoi…';
+            hideForgotAlert();
+
+            // Appel à l'API backend
+            fetch('http://localhost:8000/api/auth/reset-password/request/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+            .then(r => r.json().then(data => ({ ok: r.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    showForgotAlert(data.error || 'Email introuvable.');
+                    return;
+                }
+                // En dev : le token est renvoyé dans la réponse pour faciliter les tests
+                if (data.token) {
+                    document.getElementById('resetToken').value = data.token;
+                    showToast('✅ Code récupéré automatiquement (mode dev)', 'info');
+                } else {
+                    showToast('✅ Code envoyé à votre adresse email.', 'success');
+                }
+                // Passer à l'étape 2
+                document.getElementById('stepEmail').style.display = 'none';
+                document.getElementById('stepReset').style.display = 'block';
+            })
+            .catch(() => {
+                showForgotAlert('Erreur réseau. Vérifiez que le serveur est lancé.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = 'Envoyer le code';
+            });
+        }
+
+        // ÉTAPE 2 — Confirmation du nouveau mot de passe
+        function confirmReset() {
+            const token = document.getElementById('resetToken').value.trim();
+            const password = document.getElementById('newPassword').value;
+            if (!token) { showResetAlert('Veuillez entrer le code de réinitialisation.'); return; }
+            if (!password || password.length < 4) { showResetAlert('Le mot de passe doit comporter au moins 4 caractères.'); return; }
+
+            hideResetAlert();
+
+            fetch('http://localhost:8000/api/auth/reset-password/confirm/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, password })
+            })
+            .then(r => r.json().then(data => ({ ok: r.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    showResetAlert(data.error || 'Token invalide ou expiré.');
+                    return;
+                }
+                closeModal('modalForgot');
+                showToast('✅ Mot de passe réinitialisé avec succès ! Vous pouvez vous connecter.', 'success');
+            })
+            .catch(() => {
+                showResetAlert('Erreur réseau. Vérifiez que le serveur est lancé.');
+            });
+        }
     </script>
 </body>
 
