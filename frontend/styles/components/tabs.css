@@ -1,0 +1,11 @@
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+.tab-btn {
+  padding: 10px 20px; font-size: 13px; font-weight: 700;
+  color: var(--muted); background: none; border: none; cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  transition: color var(--transition), border-color var(--transition);
+}
+.tab-btn.active { color: var(--g2); border-bottom-color: var(--g4); }
+.tab-btn:hover { color: var(--g2); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
