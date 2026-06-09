@@ -5,6 +5,15 @@
      overflow: hidden;
  }
 
+ .section-label {
+     font-size: 10px;
+     font-weight: 800;
+     letter-spacing: 2px;
+     color: var(--g4);
+     text-transform: uppercase;
+     margin-bottom: 6px;
+ }
+
  .container {
      max-width: 1100px;
      margin: 0 auto;
