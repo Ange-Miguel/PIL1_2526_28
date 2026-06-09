@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offres & Demandes — IFRI_MentorLink</title>
+  <link rel="stylesheet" href="../styles/base/reset.css">
+  <link rel="stylesheet" href="../styles/base/variables.css">
+  
+  <link rel="stylesheet" href="../styles/components/navbar.css">
+  <link rel="stylesheet" href="../styles/components/forms.css">
+  <link rel="stylesheet" href="../styles/components/buttons.css">
+  <link rel="stylesheet" href="../styles/components/footer.css">
+  <link rel="stylesheet" href="../styles/components/badges.css">
+  <link rel="stylesheet" href="../styles/components/modals.css">
+  <link rel="stylesheet" href="../styles/components/avatar.css">
+  <link rel="stylesheet" href="../styles/components/cards.css">
+  <link rel="stylesheet" href="../styles/components/tabs.css">
+
+  <link rel="stylesheet" href="../styles/pages/offres.css">
+
+</head>
+<body>
+<div id="navbar"></div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-label">Offres & Demandes</div>
+    <h1>Trouver ou proposer du <span>mentorat</span></h1>
+    <p>Publie une offre si tu peux aider, ou une demande si tu cherches du soutien. Filtre par matière, horaire et format.</p>
+  </div>
+</div>
+
+<div class="offres-section">
+  <div class="container">
+    <!-- Barre d'actions -->
+    <div class="top-bar">
+      <div class="search-bar">
+        <div class="input-icon-wrap" style="flex:1">
+          <span class="input-icon">🔍</span>
+          <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une matière, un auteur...">
+        </div>
+        <button class="btn btn-primary" onclick="filterOffres()">Rechercher</button>
+      </div>
+      <div class="filters">
+        <select id="filterType" onchange="filterOffres()">
+          <option value="">Tout</option>
+          <option value="offre">Offres</option>
+          <option value="demande">Demandes</option>
+        </select>
+        <select id="filterFormat" onchange="filterOffres()">
+          <option value="">Tous formats</option>
+          <option value="online">En ligne</option>
+          <option value="presentiel">Présentiel</option>
+          <option value="hybrid">Hybride</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modalPublier')">+ Publier</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="mainTabs">
+      <button class="tab-btn active" data-tab="tabAll">Toutes <span id="countAll" class="badge badge-green" style="margin-left:4px">0</span></button>
+      <button class="tab-btn" data-tab="tabOffres">Offres <span id="countOffres" class="badge badge-green" style="margin-left:4px">0</span></button>
+      <button class="tab-btn" data-tab="tabDemandes">Demandes <span id="countDemandes" class="badge badge-green" style="margin-left:4px">0</span></button>
+      <button class="tab-btn" data-tab="tabMy">Mes publications</button>
+    </div>
+
+    <div class="tab-pane active" id="tabAll">
+      <div class="offres-grid" id="gridAll"></div>
+    </div>
+    <div class="tab-pane" id="tabOffres">
+      <div class="offres-grid" id="gridOffres"></div>
+    </div>
+    <div class="tab-pane" id="tabDemandes">
+      <div class="offres-grid" id="gridDemandes"></div>
+    </div>
+    <div class="tab-pane" id="tabMy">
+      <div class="offres-grid" id="gridMy"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PUBLIER -->
+<div class="modal-overlay" id="modalPublier">
+  <div class="modal modal-publish">
+    <div class="modal-header">
+      <div class="modal-title">📢 Publier une offre / demande</div>
+      <button class="modal-close" onclick="closeModal('modalPublier')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="pub-type-choice">
+        <div class="type-btn selected" id="btnTypeOffre" onclick="selectType('offre')">
+          <div class="type-icon"><img src="../assets/hand.jpg" style="width:40px;height:40px;object-fit:contain;margin:0 auto"></div>
+          <div class="type-label">Offre de mentorat</div>
+          <div class="type-sub">Je peux aider</div>
+        </div>
+        <div class="type-btn" id="btnTypeDemande" onclick="selectType('demande')">
+          <div class="type-icon"><img src="../assets/mega.jpg" style="width:40px;height:40px;object-fit:contain;margin:0 auto"></div>
+          <div class="type-label">Demande de mentorat</div>
+          <div class="type-sub">J'ai besoin d'aide</div>
+        </div>
+      </div>
+      <input type="hidden" id="pubType" value="offre">
+      <div class="form-group">
+        <label class="form-label">Matières concernées <span>*</span></label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">📚</span>
+          <input type="text" class="form-control" id="pubMatieres" placeholder="Ex: Python, Algorithmes, SQL">
+        </div>
+        <div class="form-hint">Sépare les matières par des virgules.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Disponibilités <span>*</span></label>
+        <input type="text" class="form-control" id="pubDispos" placeholder="Ex: Lundi 14h-18h, Mercredi soir">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Format <span>*</span></label>
+        <select class="form-control" id="pubFormat">
+          <option value="online">En ligne</option>
+          <option value="presentiel">Présentiel</option>
+          <option value="hybrid">Hybride</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="pubDesc" placeholder="Décris ce que tu proposes ou ce dont tu as besoin..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalPublier')">Annuler</button>
+      <button class="btn btn-primary" onclick="publier()">Publier</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer"></div>
+<script src="../js/app.js"></script>
+<script>
+let pubType = 'offre';
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderNavbar('offres.html');
+  requireAuth();
+  initTabs(document.getElementById('mainTabs').closest('div') || document.body);
+  // Manual tab init
+  document.querySelectorAll('#mainTabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#mainTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+  renderAll();
+});
+
+document.getElementById('searchInput').addEventListener('keyup', e => { if(e.key==='Enter') filterOffres(); });
+
+function selectType(t) {
+  pubType = t;
+  document.getElementById('pubType').value = t;
+  document.getElementById('btnTypeOffre').classList.toggle('selected', t==='offre');
+  document.getElementById('btnTypeDemande').classList.toggle('selected', t==='demande');
+}
+
+function renderAll(data) {
+  const offres = data || ML.load('ml_offres', []);
+  const users = ML.load('ml_users', []);
+  const me = ML.currentUser();
+
+  const all = [...offres].sort((a,b)=>b.date-a.date);
+  const onlyOffres = all.filter(o=>o.type==='offre');
+  const onlyDemandes = all.filter(o=>o.type==='demande');
+  const myPubs = all.filter(o=>o.userId===me.id);
+
+  document.getElementById('countAll').textContent = all.length;
+  document.getElementById('countOffres').textContent = onlyOffres.length;
+  document.getElementById('countDemandes').textContent = onlyDemandes.length;
+
+  renderGrid('gridAll', all, users, me);
+  renderGrid('gridOffres', onlyOffres, users, me);
+  renderGrid('gridDemandes', onlyDemandes, users, me);
+  renderGrid('gridMy', myPubs, users, me);
+}
+
+function renderGrid(gridId, list, users, me) {
+  const el = document.getElementById(gridId);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>Aucune publication</h3><p>Sois le premier à publier !</p><button class="btn btn-primary mt-16" onclick="openModal('modalPublier')">+ Publier</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(o => {
+    const author = users.find(u=>u.id===o.userId);
+    const isMe = o.userId === me.id;
+    const icon = o.type==='offre' ? 'hand.jpg' : 'mega.jpg';
+    const tags = (o.matieres||[]).map(m=>`<span class="badge badge-green">${m}</span>`).join('');
+    const fmtBadge = `<span class="badge badge-${o.format}">${o.format}</span>`;
+    return `<div class="offre-card">
+      <div class="offre-card-top">
+        <div class="offre-type-icon"><img src="../assets/${icon}" alt=""></div>
+        <div style="flex:1">
+          <div class="offre-card-title">${o.type==='offre'?'📤 Offre':'📥 Demande'} de mentorat</div>
+          <div class="offre-card-author">Par ${author?author.prenom+' '+author.nom:'Inconnu'} · ${author?author.filiere:''}</div>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">${ML.timeAgo(o.date)}</span>
+      </div>
+      <div class="offre-card-body">
+        <p class="offre-card-desc">${o.description||'Aucune description.'}</p>
+        <div class="offre-card-tags">${tags} ${fmtBadge}</div>
+        <div class="offre-card-meta">
+          <span>🕐 ${(o.disponibilites||[]).join(', ')||'Non précisé'}</span>
+        </div>
+      </div>
+      <div class="offre-card-footer">
+        ${!isMe ? `<a href="messagerie.html?user=${o.userId}" class="btn btn-primary btn-sm" style="flex:1">💬 Répondre</a>` : ''}
+        ${isMe ? `<button class="btn btn-danger btn-sm" onclick="deleteOffre('${o.id}')">🗑 Supprimer</button>` : ''}
+        <a href="matching.html" class="btn btn-secondary btn-sm">🤝 Matcher</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterOffres() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const type = document.getElementById('filterType').value;
+  const format = document.getElementById('filterFormat').value;
+  let offres = ML.load('ml_offres', []);
+  if (q) offres = offres.filter(o =>
+    (o.matieres||[]).some(m=>m.toLowerCase().includes(q)) ||
+    (o.description||'').toLowerCase().includes(q)
+  );
+  if (type) offres = offres.filter(o=>o.type===type);
+  if (format) offres = offres.filter(o=>o.format===format);
+  renderAll(offres);
+}
+
+function publier() {
+  const matieres = document.getElementById('pubMatieres').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const dispos = document.getElementById('pubDispos').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const format = document.getElementById('pubFormat').value;
+  const desc = document.getElementById('pubDesc').value;
+  if (!matieres.length) { showToast('Renseigne au moins une matière.', 'danger'); return; }
+  const me = ML.currentUser();
+  const newOffre = {
+    id: ML.uid(), userId: me.id, type: pubType,
+    matieres, disponibilites: dispos, format, description: desc, date: Date.now()
+  };
+  const offres = ML.load('ml_offres', []);
+  offres.push(newOffre);
+  ML.save('ml_offres', offres);
+  closeModal('modalPublier');
+  document.getElementById('pubMatieres').value = '';
+  document.getElementById('pubDispos').value = '';
+  document.getElementById('pubDesc').value = '';
+  showToast('Publication créée avec succès ! 🎉');
+  renderAll();
+}
+
+function deleteOffre(id) {
+  if (!confirm('Supprimer cette publication ?')) return;
+  let offres = ML.load('ml_offres', []);
+  offres = offres.filter(o=>o.id!==id);
+  ML.save('ml_offres', offres);
+  showToast('Publication supprimée.');
+  renderAll();
+}
+</script>
+</body>
+</html>

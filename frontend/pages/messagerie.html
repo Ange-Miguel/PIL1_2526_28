@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messagerie — IFRI_MentorLink</title>
+  
+  <link rel="stylesheet" href="../styles/base/reset.css">
+  <link rel="stylesheet" href="../styles/base/variables.css">
+  
+  <link rel="stylesheet" href="../styles/components/navbar.css">
+  <link rel="stylesheet" href="../styles/components/forms.css">
+  <link rel="stylesheet" href="../styles/components/buttons.css">
+  <link rel="stylesheet" href="../styles/components/footer.css">
+  
+  <link rel="stylesheet" href="../styles/pages/messagerie.css">
+</head>
+<body>
+<div id="navbar"></div>
+
+<div class="chat-layout">
+  <!-- SIDEBAR CONVERSATIONS -->
+  <div class="conv-sidebar" id="convSidebar">
+    <div class="conv-sidebar-header">
+      <h2>💬 Messagerie</h2>
+      <div class="conv-search">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="convSearch" placeholder="Rechercher..." oninput="filterConvs()">
+      </div>
+    </div>
+    <div class="conv-list" id="convList"></div>
+    <div class="new-conv-btn">
+      <button class="btn btn-primary btn-block btn-sm" onclick="openModal('modalNewConv')">✉ Nouvelle conversation</button>
+    </div>
+  </div>
+
+  <!-- ZONE DE CHAT -->
+  <div class="chat-area" id="chatArea">
+    <div class="chat-empty" id="chatEmpty">
+      <div class="icon"><img src="../assets/chat.jpg" style="width:80px;height:80px;object-fit:contain;margin:0 auto"></div>
+      <h3>Aucune conversation sélectionnée</h3>
+      <p>Sélectionne une conversation ou démarre-en une nouvelle.</p>
+      <button class="btn btn-primary mt-16" onclick="openModal('modalNewConv')">Nouvelle conversation</button>
+    </div>
+    <div id="chatOpen" style="display:none;flex:1;display:flex;flex-direction:column;height:100%">
+      <div class="chat-header" id="chatHeader"></div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-bar">
+        <textarea id="msgInput" rows="1" placeholder="Écrire un message..." onkeydown="handleEnter(event)"></textarea>
+        <button class="btn btn-primary" onclick="sendMsg()">Envoyer ↗</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOUVELLE CONV -->
+<div class="modal-overlay" id="modalNewConv">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✉ Nouvelle conversation</div>
+      <button class="modal-close" onclick="closeModal('modalNewConv')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Choisir un étudiant</label>
+        <select class="form-control" id="newConvUser">
+          <option value="">-- Sélectionner --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message initial</label>
+        <textarea class="form-control" id="newConvMsg" placeholder="Bonjour, je t'ai trouvé via MentorLink..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalNewConv')">Annuler</button>
+      <button class="btn btn-primary" onclick="startNewConv()">Démarrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer" style="display:none"></div>
+<script src="../js/app.js"></script>
+<script>
+let activeConvId = null;
+let allUsers = [], me = null, allMsgs = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderNavbar('messagerie.html');
+  requireAuth();
+  me = ML.currentUser();
+  allUsers = ML.load('ml_users', []);
+  allMsgs = ML.load('ml_messages', []);
+
+  // Pré-remplir select
+  const sel = document.getElementById('newConvUser');
+  allUsers.filter(u=>u.id!==me.id).forEach(u => {
+    sel.innerHTML += `<option value="${u.id}">${u.prenom} ${u.nom} (${u.filiere})</option>`;
+  });
+
+  renderConvList();
+
+  // Auto-open si param user
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('user')) openConv(params.get('user'));
+});
+
+function getConvId(uid1, uid2) {
+  return 'conv_' + [uid1, uid2].sort().join('_');
+}
+
+function getConversations() {
+  const convMap = {};
+  allMsgs.forEach(m => {
+    if (m.senderId === me.id || m.receiverId === me.id) {
+      const otherId = m.senderId === me.id ? m.receiverId : m.senderId;
+      if (!convMap[m.convId] || m.ts > convMap[m.convId].ts) {
+        convMap[m.convId] = { ...m, otherId };
+      }
+    }
+  });
+  return Object.values(convMap).sort((a,b)=>b.ts-a.ts);
+}
+
+function renderConvList(filter='') {
+  const convs = getConversations();
+  const el = document.getElementById('convList');
+  const filtered = filter ? convs.filter(c => {
+    const other = allUsers.find(u=>u.id===c.otherId);
+    return other && (other.prenom+' '+other.nom).toLowerCase().includes(filter.toLowerCase());
+  }) : convs;
+
+  if (!filtered.length) {
+    el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">Aucune conversation.<br>Démarre une nouvelle !</div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(c => {
+    const other = allUsers.find(u=>u.id===c.otherId);
+    const name = other ? other.prenom + ' ' + other.nom : 'Inconnu';
+    const initials = ML.initials(name);
+    const active = c.convId === activeConvId;
+    return `<div class="conv-item ${active?'active':''}" onclick="openConv('${c.otherId}')">
+      <div class="avatar avatar-sm">${initials}</div>
+      <div class="conv-item-info">
+        <div class="conv-item-name">${name}</div>
+        <div class="conv-item-preview">${c.senderId===me.id?'Moi: ':''}${c.text}</div>
+      </div>
+      <div>
+        <div class="conv-item-time">${ML.timeAgo(c.ts)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openConv(otherId) {
+  const other = allUsers.find(u=>u.id===otherId);
+  if (!other) return;
+  activeConvId = getConvId(me.id, otherId);
+  renderConvList();
+
+  document.getElementById('chatEmpty').style.display = 'none';
+  const chatOpen = document.getElementById('chatOpen');
+  chatOpen.style.display = 'flex';
+  chatOpen.style.flexDirection = 'column';
+
+  // Header
+  document.getElementById('chatHeader').innerHTML = `
+    <div class="avatar avatar-md">${ML.initials(other.prenom+' '+other.nom)}</div>
+    <div class="chat-header-info">
+      <h3>${other.prenom} ${other.nom}</h3>
+      <p>${other.filiere} · ${other.niveau} · ${other.role}</p>
+    </div>
+    <div class="chat-header-actions">
+      <a href="profil.html?id=${other.id}" class="btn btn-secondary btn-sm">👤 Profil</a>
+      <a href="matching.html" class="btn btn-secondary btn-sm">🤝 Matcher</a>
+    </div>`;
+
+  renderMessages();
+}
+
+function renderMessages() {
+  const msgs = allMsgs.filter(m=>m.convId===activeConvId).sort((a,b)=>a.ts-b.ts);
+  const el = document.getElementById('chatMessages');
+
+  if (!msgs.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">Commencez la conversation ! 👋</div>`;
+    return;
+  }
+  el.innerHTML = msgs.map(m => {
+    const isMine = m.senderId === me.id;
+    const sender = allUsers.find(u=>u.id===m.senderId);
+    return `<div class="msg-bubble ${isMine?'mine':'other'}">
+      ${!isMine ? `<div class="avatar avatar-sm">${ML.initials(sender?sender.prenom+' '+sender.nom:'?')}</div>` : ''}
+      <div>
+        <div class="msg-text">${escHtml(m.text)}</div>
+        <div class="msg-time" style="${isMine?'text-align:right':''}">
+          ${isMine?'Moi · ':''} ${ML.timeAgo(m.ts)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendMsg() {
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text || !activeConvId) return;
+  const otherId = activeConvId.replace('conv_','').split('_').find(id=>id!==me.id);
+  const newMsg = { id: ML.uid(), convId: activeConvId, senderId: me.id, receiverId: otherId, text, ts: Date.now() };
+  allMsgs.push(newMsg);
+  ML.save('ml_messages', allMsgs);
+  inp.value = '';
+  renderMessages();
+  renderConvList();
+}
+
+function handleEnter(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function startNewConv() {
+  const otherId = document.getElementById('newConvUser').value;
+  const msg = document.getElementById('newConvMsg').value.trim();
+  if (!otherId) { showToast('Sélectionne un étudiant.', 'danger'); return; }
+  if (!msg) { showToast('Écris un message initial.', 'danger'); return; }
+  const convId = getConvId(me.id, otherId);
+  const newMsg = { id: ML.uid(), convId, senderId: me.id, receiverId: otherId, text: msg, ts: Date.now() };
+  allMsgs.push(newMsg);
+  ML.save('ml_messages', allMsgs);
+  closeModal('modalNewConv');
+  document.getElementById('newConvMsg').value = '';
+  openConv(otherId);
+  renderConvList();
+}
+
+function filterConvs() {
+  renderConvList(document.getElementById('convSearch').value);
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
